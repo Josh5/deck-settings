@@ -13,6 +13,16 @@ body:
         ```
 
   # -- GAME INFORMATION --
+  - type: markdown
+    attributes:
+      value: |
+        ---
+        <br/>
+        <br/>
+
+        ## Game Information
+
+        <br/>
   #   > Name
   - type: input
     id: game_name
@@ -32,6 +42,16 @@ body:
       required: true
 
   # -- SETUP EXPERIENCE --
+  - type: markdown
+    attributes:
+      value: |
+        ---
+        <br/>
+        <br/>
+
+        ## Setup Experience
+
+        <br/>
   #   > Deck compatibility
   - type: dropdown
     id: deck_compatibility
@@ -62,6 +82,16 @@ body:
       required: true
 
   # -- HARDWARE CONFIGURATION --
+  - type: markdown
+    attributes:
+      value: |
+        ---
+        <br/>
+        <br/>
+
+        ## Hardware Configuration
+
+        <br/>
   #   > Device
   - type: dropdown
     id: device
@@ -81,7 +111,7 @@ body:
     attributes:
       label: SteamOS Version
       description: What version of SteamOS are your running?
-      placeholder: 3.6.20
+      value: 3.6.20
     validations:
       required: true
   #   > Steam Deck Undervolt
@@ -94,6 +124,16 @@ body:
       required: false
 
   # -- STEAMOS CONFIGURATION --
+  - type: markdown
+    attributes:
+      value: |
+        ---
+        <br/>
+        <br/>
+
+        ## SteamOS Configuration
+
+        <br/>
   #   > Game Compatibility Tool
   - type: dropdown
     id: steam_play_compatibility_tool
@@ -127,12 +167,22 @@ body:
   #   >
 
   # -- STEAM DECK PERFORMANCE SETTINGS --
+  - type: markdown
+    attributes:
+      value: |
+        ---
+        <br/>
+        <br/>
+
+        ## Steam Deck Performance Settings
+
+        <br/>
   #   > Frame Limit
   - type: input
     id: frame_limit
     attributes:
       label: Frame Limit
-      description: Did you apply any frame limit?
+      description: If you applied a frame limit value, what value did you set? Leave blank if no frame limit was set.
     validations:
       required: false
   #   > Allow Tearing
@@ -158,7 +208,7 @@ body:
     id: tdp_limit
     attributes:
       label: TDP Limit
-      description: If you applied a TDP limit value, what value did you set?
+      description: If you applied a TDP limit value, what value did you set? Leave blank if no TDP limit was set.
     validations:
       required: false
   #   > Manual GPU Clock
@@ -166,7 +216,7 @@ body:
     id: manual_gpu_clock
     attributes:
       label: Manual GPU Clock
-      description: If you applied a manual GPU clock value, what value did you set?
+      description: If you applied a manual GPU clock value, what value did you set? Leave blank if no manual GPU clock was set.
     validations:
       required: false
   #   > Scaling Mode
@@ -203,12 +253,22 @@ body:
   - type: markdown
     attributes:
       value: |
+        ---
+        <br/>
+        <br/>
+
+        ## In-Game Settings
+
+        <br/>
+  - type: markdown
+    attributes:
+      value: |
         Notes on formatting your Display and Graphics settings:
         - Try to match the format shown in the game.
         - Use markdown.
           - Separate each section with a level 4 heading (prefix it with 4 hashes `####`)
-          - Create a list of options with the option name set bold (wrap in double underscores `__Setting Option Name:__`).
-        - If the game does not separate "Display" or "Graphics" options, then just use the __Display__ input field.
+          - Create a list of options with the option name set bold (wrap in double asterisks `**Setting Option Name:**`).
+        - If the game does not separate "Display" or "Graphics" options, then just use the **Display** input field.
 
         Example:
         ```
@@ -233,6 +293,16 @@ body:
       required: false
 
   # -- ADDITIONAL NOTES --
+  - type: markdown
+    attributes:
+      value: |
+        ---
+        <br/>
+        <br/>
+
+        ## Additional Notes
+
+        <br/>
   - type: textarea
     id: additional_notes
     attributes:
