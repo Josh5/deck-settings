@@ -1,0 +1,242 @@
+name: "Game Report"
+description: "File a game report"
+title: "${{ inputs.game_name }} - [${{ inputs.deck_compatibility }} - ${{ inputs.target_framerate }}]"
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to submit a report.
+
+        To keep reports orderly, submit them with a title following this format:
+        ```
+        <FULL GAME NAME> - [<COMPATIBILITY> - <EXPECTED FRAMERATE>]
+        ```
+
+  # -- GAME INFORMATION --
+  #   > Name
+  - type: input
+    id: game_name
+    attributes:
+      label: Game Name
+      description: Name of the game for this report. Please use the full name. Copy past the header out of the Steam Store if possible including all special characters.
+    validations:
+      required: true
+  #   > Store
+  - type: input
+    id: store
+    attributes:
+      label: Store
+      description: The store that the game is installed from. If not installed directly from Steam, describe what store it was installed from and what tool was used to install it (Eg. Lutris, Heroic, etc).
+      placeholder: Steam
+    validations:
+      required: true
+
+  # -- SETUP EXPERIENCE --
+  #   > Deck compatibility
+  - type: dropdown
+    id: deck_compatibility
+    attributes:
+      label: Deck Compatibility
+      description: What was your experience with this game's compatibility with the Steam Deck?
+      options:
+        - Verified
+        - Playable
+        - Unsupported
+      default: 0
+    validations:
+      required: true
+  #   > Target framerate
+  - type: dropdown
+    id: target_framerate
+    attributes:
+      label: Target Framerate
+      description: What framerate were you targeting?
+      options:
+        - "<30 FPS"
+        - "30-40 FPS"
+        - "40-50 FPS"
+        - "50-60 FPS"
+        - ">60 FPS"
+      default: 4
+    validations:
+      required: true
+
+  # -- HARDWARE CONFIGURATION --
+  #   > Device
+  - type: dropdown
+    id: device
+    attributes:
+      label: Steam Deck Device
+      description: What what hardware device is ?
+      options:
+        - Steam Deck LCD (64GB)
+        - Steam Deck LCD (256GB/512GB)
+        - Steam Deck OLED
+      default: 1
+    validations:
+      required: true
+  #   > SteamOS Version
+  - type: input
+    id: steamos_version
+    attributes:
+      label: SteamOS Version
+      description: What version of SteamOS are your running?
+      placeholder: 3.6.20
+    validations:
+      required: true
+  #   > Steam Deck Undervolt
+  - type: input
+    id: undervolt
+    attributes:
+      label: Undervolt Applied
+      description: Have you applied any undervolting to your Deck? Specify it in the format CPU/GPU/SOC. Eg, 20/40/20. Leave blank if no undervolting has been applied.
+    validations:
+      required: false
+
+  # -- STEAMOS CONFIGURATION --
+  #   > Game Compatibility Tool
+  - type: dropdown
+    id: steam_play_compatibility_tool
+    attributes:
+      label: Steam Play Compatibility Tool Used
+      description: What Steam Play compatibility tool was used?
+      options:
+        - Steam Proton
+        - Glorious Eggroll Proton (GE)
+        - Luxtorpeda
+        - Boxtron
+      default: 0
+    validations:
+      required: true
+  #   > Game Compatibility Version
+  - type: input
+    id: steam_play_compatibility_tool_version
+    attributes:
+      label: Compatibility Tool Version
+      description: What version of the above compatibility tool are your running?
+    validations:
+      required: true
+  #   > Launch Options
+  - type: input
+    id: launch_options
+    attributes:
+      label: Custom Launch Options
+      description: Did you apply any custom launch options?
+    validations:
+      required: false
+  #   >
+
+  # -- STEAM DECK PERFORMANCE SETTINGS --
+  #   > Frame Limit
+  - type: input
+    id: frame_limit
+    attributes:
+      label: Frame Limit
+      description: Did you apply any frame limit?
+    validations:
+      required: false
+  #   > Allow Tearing
+  - type: checkboxes
+    id: allow_tearing
+    attributes:
+      label: Allow Tearing
+      description: Did you enable the "Allow Tearing" option?
+      options:
+        - label: Enabled
+          required: false
+  #   > Half Rate Shading
+  - type: checkboxes
+    id: half_rate_shading
+    attributes:
+      label: Half Rate Shading
+      description: Did you enable the "Half Rate Shading" option?
+      options:
+        - label: Enabled
+          required: false
+  #   > TDP Limit
+  - type: input
+    id: tdp_limit
+    attributes:
+      label: TDP Limit
+      description: If you applied a TDP limit value, what value did you set?
+    validations:
+      required: false
+  #   > Manual GPU Clock
+  - type: input
+    id: manual_gpu_clock
+    attributes:
+      label: Manual GPU Clock
+      description: If you applied a manual GPU clock value, what value did you set?
+    validations:
+      required: false
+  #   > Scaling Mode
+  - type: dropdown
+    id: scaling_mode
+    attributes:
+      label: Scaling Mode
+      description: Did you set the Scaling Mode?
+      options:
+        - Auto
+        - Integer
+        - Fit
+        - Stretch
+        - Fill
+      default: 0
+    validations:
+      required: false
+  #   > Scaling Filter
+  - type: dropdown
+    id: scaling_filter
+    attributes:
+      label: Scaling Filter
+      description: Did you set the Scaling Filter?
+      options:
+        - Linear
+        - Pixel
+        - FSR
+        - NIS
+      default: 0
+    validations:
+      required: false
+
+  # -- IN-GAME SETTINGS --
+  - type: markdown
+    attributes:
+      value: |
+        Notes on formatting your Display and Graphics settings:
+        - Try to match the format shown in the game.
+        - Use markdown.
+          - Separate each section with a level 4 heading (prefix it with 4 hashes `####`)
+          - Create a list of options with the option name set bold (wrap in double underscores `__Setting Option Name:__`).
+        - If the game does not separate "Display" or "Graphics" options, then just use the __Display__ input field.
+
+        Example:
+        ```
+        #### Section
+        - **Option1:** enabled
+        ```
+  #   > Display
+  - type: textarea
+    id: in_game_display_settings
+    attributes:
+      label: Game Display Settings
+      description: Use markdown to show the display settings used in game.
+    validations:
+      required: true
+  #   > Graphics
+  - type: textarea
+    id: in_game_graphics_settings
+    attributes:
+      label: Game Graphics Settings
+      description: Use markdown to show the graphics settings used in game.
+    validations:
+      required: false
+
+  # -- ADDITIONAL NOTES --
+  - type: textarea
+    id: additional_notes
+    attributes:
+      label: Additional Notes
+      description: Any additional notes about the game.
+    validations:
+      required: false
