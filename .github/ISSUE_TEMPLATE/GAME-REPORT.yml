@@ -27,12 +27,18 @@ body:
     validations:
       required: true
   #   > Store
-  - type: input
-    id: store
+  - type: dropdown
+    id: launcher
     attributes:
-      label: Store
-      description: The store that the game is installed from. If not installed directly from Steam, describe what store it was installed from and what tool was used to install it (Eg. Lutris, Heroic, etc).
-      placeholder: Steam
+      label: Launcher
+      description: The launcher that the game is installed from. If not installed directly from Steam, describe what store it was installed from and what tool was used to install it (Eg. Lutris, Heroic, etc).
+      options:
+        - Steam
+        - Heroic
+        - Lutris
+        - Bottles
+        - Other
+      default: 0
     validations:
       required: true
 
