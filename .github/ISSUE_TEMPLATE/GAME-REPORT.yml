@@ -1,16 +1,11 @@
 name: "Game Report"
 description: "File a game report"
-title: "${{ inputs.game_name }} - [${{ inputs.deck_compatibility }} - ${{ inputs.target_framerate }}]"
+title: "(Placeholder - The title will be automatically filled in) <FULL GAME NAME> - [<COMPATIBILITY> - <EXPECTED FRAMERATE>]"
 body:
   - type: markdown
     attributes:
       value: |
         Thanks for taking the time to submit a report.
-
-        To keep reports orderly, submit them with a title following this format:
-        ```
-        <FULL GAME NAME> - [<COMPATIBILITY> - <EXPECTED FRAMERATE>]
-        ```
 
   # -- GAME INFORMATION --
   - type: markdown

@@ -1,0 +1,83 @@
+name: "Issue Title Updater"
+
+on:
+  issues:
+    types: [opened, edited]
+
+jobs:
+  parse-and-update-issue-title:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      issues: write
+    steps:
+      - name: "Set Title from issue body"
+        uses: actions/github-script@v6
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const body = context.payload.issue.body || "";
+
+            function extractHeadingValue(lines, headingRegex) {
+              // 1. Find the line index that matches the heading (e.g., "### Game Name").
+              const headingIndex = lines.findIndex((line) => headingRegex.test(line));
+              if (headingIndex === -1) {
+                return null; // The heading was not found at all.
+              }
+
+              // 2. Start scanning subsequent lines until we either hit another heading or find a non-empty answer.
+              for (let i = headingIndex + 1; i < lines.length; i++) {
+                const currentLine = lines[i].trim();
+
+                // If it's empty, keep going to skip blank lines.
+                if (!currentLine) {
+                  continue;
+                }
+
+                // If it starts with "###", we've reached the next heading—stop and return null (no answer).
+                if (currentLine.startsWith("###")) {
+                  return null;
+                }
+
+                // Otherwise, this line should be our answer. Return it, stripped of whitespace.
+                return currentLine;
+              }
+
+              // If we run out of lines, we didn’t find any valid answer.
+              return null;
+            }
+
+            // Split into lines
+            const lines = body.split(/\r?\n/);
+
+            // 3) Extract values for Game Name & Target Framerate
+            const gameName = extractHeadingValue(lines, /^### Game Name/);
+            const targetFramerate = extractHeadingValue(lines, /^### Target Framerate/);
+
+            // 4) Fallback if not found
+            const finalGameName = gameName || "Untitled";
+            const finalFramerate = targetFramerate || "Unknown";
+
+            // 5) Build title
+            const newTitle = `${finalGameName} - ${finalFramerate}`;
+
+            // 6) Output
+            console.log("Parsed from issue body:");
+            console.log(`  Game Name:        ${finalGameName}`);
+            console.log(`  Target Framerate: ${finalFramerate}`);
+            console.log("\nConstructed Title:");
+            console.log(`  ${newTitle}`);
+
+            // Only update if the new title differs from the current
+            console.log(`Current issue ${context.payload.issue.number} title ${context.payload.issue.title}`)
+            if (context.payload.issue.title !== newTitle) {
+              await github.rest.issues.update({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.payload.issue.number,
+                title: newTitle
+              });
+              console.log(`Issue #${context.payload.issue.number} title updated to: ${newTitle}`);
+            } else {
+              console.log(`Issue #${context.payload.issue.number} already has the correct title; skipping update.`);
+            }
