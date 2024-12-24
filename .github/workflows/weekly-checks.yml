@@ -1,93 +1,17 @@
-name: "Issue Title Updater"
+name: "Weekly Game Reports Check"
 
 on:
-  issues:
-    types: [opened, edited]
+  schedule:
+    - cron: "0 0 * * 0"
 
 jobs:
-  parse-and-update-issue-title:
+  weekly-check:
     runs-on: ubuntu-latest
     permissions:
       contents: write
       issues: write
     steps:
-      - name: "Set Title from issue body"
-        uses: actions/github-script@v6
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          script: |
-            const issue = context.payload.issue
-            const body = issue.body || "";
-            const lines = body.split(/\r?\n/);
-
-            function extractHeadingValue(lines, headingRegex) {
-              // 1. Find the line index that matches the heading (e.g., "### Game Name").
-              const headingIndex = lines.findIndex((line) => headingRegex.test(line));
-              if (headingIndex === -1) {
-                return null; // The heading was not found at all.
-              }
-
-              // 2. Start scanning subsequent lines until we either hit another heading or find a non-empty answer.
-              for (let i = headingIndex + 1; i < lines.length; i++) {
-                const currentLine = lines[i].trim();
-
-                // If it's empty, keep going to skip blank lines.
-                if (!currentLine) {
-                  continue;
-                }
-
-                // If it starts with "###", we've reached the next heading—stop and return null (no answer).
-                if (currentLine.startsWith("###")) {
-                  return null;
-                }
-
-                // Otherwise, this line should be our answer. Return it, stripped of whitespace.
-                return currentLine;
-              }
-
-              // If we run out of lines, we didn’t find any valid answer.
-              return null;
-            }
-
-            // 3) Extract values for Game Name & Target Framerate
-            const gameName = extractHeadingValue(lines, /^### Game Name/);
-            const targetFramerate = extractHeadingValue(lines, /^### Target Framerate/);
-
-            // 4) Fallback if not found
-            const finalGameName = gameName || "Untitled";
-            const finalFramerate = targetFramerate || "Unknown";
-
-            // 5) Build title
-            const newTitle = `${finalGameName} - ${finalFramerate}`;
-
-            // 6) Output
-            console.log("Parsed from issue body:");
-            console.log(`  Game Name:        ${finalGameName}`);
-            console.log(`  Target Framerate: ${finalFramerate}`);
-            console.log("\nConstructed Title:");
-            console.log(`  ${newTitle}`);
-
-            // Only update if the new title differs from the current
-            console.log(`Current issue ${issue.number} title ${issue.title}`)
-            if (issue.title !== newTitle) {
-              await github.rest.issues.update({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                issue_number: issue.number,
-                title: newTitle
-              });
-              console.log(`Issue #${issue.number} title updated to: ${newTitle}`);
-            } else {
-              console.log(`Issue #${issue.number} already has the correct title; skipping update.`);
-            }
-
-  check-report-for-missing-data:
-    runs-on: ubuntu-latest
-    permissions:
-      contents: write
-      issues: write
-    steps:
-      - name: "Check report for missing data"
+      - name: "Check all open issues for incomplete template"
         uses: actions/github-script@v6
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
@@ -226,9 +150,35 @@ jobs:
               }
             }
 
-            const issue = context.payload.issue
-            // Skip PRs or any issue that doesn't have a body
-            if (issue.pull_request) process.exit(0);
-            if (!issue.body) process.exit(0);
+            /**
+            * 1) List *all* open issues in this repo.
+            *    We'll fetch in pages until we run out.
+            */
+            let page = 1;
+            let perPage = 50;
+            let allIssues = [];
+            while (true) {
+              const { data: issues } = await github.rest.issues.listForRepo({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                state: "open",
+                per_page: perPage,
+                page: page,
+              });
+              if (issues.length === 0) break; // no more issues
+              allIssues = allIssues.concat(issues);
+              page++;
+            }
 
-            await processIssue(issue, issue.body);
+            // We'll loop through each open issue now
+            for (const issue of allIssues) {
+              // Skip PRs or any issue that doesn't have a body
+              if (issue.pull_request) continue;
+              if (!issue.body) continue;
+
+              await processIssue(issue, issue.body);
+            }
+
+            // The job as a whole doesn't need to fail if we found incomplete issues
+            // We'll exit successfully after processing them all.
+            console.log("Weekly issue check complete.");
