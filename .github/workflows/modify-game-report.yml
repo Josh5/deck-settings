@@ -81,6 +81,95 @@ jobs:
               console.log(`Issue #${issue.number} already has the correct title; skipping update.`);
             }
 
+  parse-and-update-issue-labels:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      issues: write
+    steps:
+      - name: "Set Title from issue body"
+        uses: actions/github-script@v6
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const issue = context.payload.issue
+            const body = issue.body || "";
+            const lines = body.split(/\r?\n/);
+
+            function extractHeadingValue(lines, headingRegex) {
+              // 1. Find the line index that matches the heading (e.g., "### Game Name").
+              const headingIndex = lines.findIndex((line) => headingRegex.test(line));
+              if (headingIndex === -1) {
+                return null; // The heading was not found at all.
+              }
+
+              // 2. Start scanning subsequent lines until we either hit another heading or find a non-empty answer.
+              for (let i = headingIndex + 1; i < lines.length; i++) {
+                const currentLine = lines[i].trim();
+
+                // If it's empty, keep going to skip blank lines.
+                if (!currentLine) {
+                  continue;
+                }
+
+                // If it starts with "###", we've reached the next heading—stop and return null (no answer).
+                if (currentLine.startsWith("###")) {
+                  return null;
+                }
+
+                // Otherwise, this line should be our answer. Return it, stripped of whitespace.
+                return currentLine;
+              }
+
+              // If we run out of lines, we didn’t find any valid answer.
+              return null;
+            }
+
+            // Extract label values
+            const deviceValue = extractHeadingValue(lines, /^### Device/);
+
+            let newDeviceLabel = null;
+            if (deviceValue) {
+              const lowerDevice = deviceValue.toLowerCase();
+
+              // Example logic: if the line includes "steam deck", label as "device:steamdeck"
+              if (lowerDevice.includes("steam deck")) {
+                newDeviceLabel = "device:steamdeck";
+              } 
+              else if (lowerDevice.includes("ally")) {
+                newDeviceLabel = "device:rogally";
+              }
+            }
+
+            // Remove any old "device:*" labels that don't match the new label
+            const existingLabelNames = issue.labels.map((label) => label.name);
+            const deviceLabelsToRemove = existingLabelNames.filter((name) => name.startsWith("device:") && name !== newDeviceLabel);
+
+            for (const labelName of deviceLabelsToRemove) {
+              console.log(`Removing old device label: ${labelName}`);
+              await github.rest.issues.removeLabel({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: issue.number,
+                name: labelName,
+              });
+            }
+
+            // If we have a newDeviceLabel and it's not already on the issue, add it
+            if (newDeviceLabel && !existingLabelNames.includes(newDeviceLabel)) {
+              console.log(`Adding device label: ${newDeviceLabel}`);
+              await github.rest.issues.addLabels({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: issue.number,
+                labels: [newDeviceLabel],
+              });
+            } else if (!newDeviceLabel) {
+              console.log("No matching device label found or specified in issue text. Not adding any device label.");
+            } else {
+              console.log(`Device label "${newDeviceLabel}" already present on issue #${issue.number}.`);
+            }
+
   check-report-for-missing-data:
     runs-on: ubuntu-latest
     permissions:
@@ -97,7 +186,7 @@ jobs:
               { heading: "Launcher", minLength: 3 },
               { heading: "Deck Compatibility", minLength: 1 },
               { heading: "Target Framerate", minLength: 1 },
-              { heading: "Steam Deck Device", minLength: 1 },
+              { heading: "Device", minLength: 1 },
               { heading: "SteamOS Version", minLength: 1 },
               { heading: "Undervolt Applied", minLength: 1 },
               { heading: "Steam Play Compatibility Tool Used", minLength: 1 },

@@ -21,7 +21,7 @@ jobs:
               { heading: "Launcher", minLength: 3 },
               { heading: "Deck Compatibility", minLength: 1 },
               { heading: "Target Framerate", minLength: 1 },
-              { heading: "Steam Deck Device", minLength: 1 },
+              { heading: "Device", minLength: 1 },
               { heading: "SteamOS Version", minLength: 1 },
               { heading: "Undervolt Applied", minLength: 1 },
               { heading: "Steam Play Compatibility Tool Used", minLength: 1 },

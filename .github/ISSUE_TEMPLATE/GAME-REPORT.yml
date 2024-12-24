@@ -97,7 +97,7 @@ body:
   - type: dropdown
     id: device
     attributes:
-      label: Steam Deck Device
+      label: Device
       description: What what hardware device is ?
       options:
         - Steam Deck LCD (64GB)
