@@ -23,9 +23,17 @@ body:
     id: game_name
     attributes:
       label: Game Name
-      description: Name of the game for this report. Please use the full name. Copy past the header out of the Steam Store if possible including all special characters.
+      description: Name of the game for this report. Please use the full name. Copy/past the header out of the SteamDB if possible and include all special characters.
     validations:
       required: true
+  #   > SteamDB App ID
+  - type: input
+    id: app_id
+    attributes:
+      label: SteamDB App ID
+      description: The App ID from SteamDB (https://steamdb.info/). Leave blank if not applicable.
+    validations:
+      required: false
   #   > Store
   - type: dropdown
     id: launcher
