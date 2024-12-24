@@ -58,7 +58,7 @@ jobs:
             const finalFramerate = targetFramerate || "Unknown";
 
             // 5) Build title
-            const newTitle = `${finalGameName} - ${finalFramerate}`;
+            const newTitle = `${finalGameName} ( ${finalFramerate} )`;
 
             // 6) Output
             console.log("Parsed from issue body:");

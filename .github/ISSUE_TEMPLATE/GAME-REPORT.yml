@@ -73,11 +73,11 @@ body:
       label: Target Framerate
       description: What framerate were you targeting?
       options:
-        - "<30 FPS"
-        - "30-40 FPS"
-        - "40-50 FPS"
-        - "50-60 FPS"
-        - ">60 FPS"
+        - <30 FPS
+        - 30-39 FPS
+        - 40-49 FPS
+        - 50-59 FPS
+        - 60+ FPS
       default: 4
     validations:
       required: true
@@ -157,7 +157,7 @@ body:
     id: steam_play_compatibility_tool_version
     attributes:
       label: Compatibility Tool Version
-      description: What version of the above compatibility tool are your running?
+      description: What version of the above compatibility tool are your running? Write "latest" if using the default Proton set by Steam.
     validations:
       required: true
   #   > Launch Options
