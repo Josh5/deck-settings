@@ -103,6 +103,9 @@ body:
         - Steam Deck LCD (64GB)
         - Steam Deck LCD (256GB/512GB)
         - Steam Deck OLED
+        - ROG Ally Z1 
+        - ROG Ally Z1 Extreme
+        - ROG Ally X
       default: 1
     validations:
       required: true
