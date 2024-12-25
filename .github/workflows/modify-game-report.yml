@@ -81,6 +81,111 @@ jobs:
               console.log(`Issue #${issue.number} already has the correct title; skipping update.`);
             }
 
+  parse-and-update-issue-app-id:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      issues: write
+    steps:
+      - name: "Assign to project based on app ID"
+        uses: actions/github-script@v6
+        with:
+          github-token: ${{ secrets.GH_TOKEN }}
+          script: |
+            const issue = context.payload.issue
+            const body = issue.body || "";
+            const lines = body.split(/\r?\n/);
+
+            function extractHeadingValue(lines, headingRegex) {
+              // 1. Find the line index that matches the heading (e.g., "### Game Name").
+              const headingIndex = lines.findIndex((line) => headingRegex.test(line));
+              if (headingIndex === -1) {
+                return null; // The heading was not found at all.
+              }
+
+              // 2. Start scanning subsequent lines until we either hit another heading or find a non-empty answer.
+              for (let i = headingIndex + 1; i < lines.length; i++) {
+                const currentLine = lines[i].trim();
+
+                // If it's empty, keep going to skip blank lines.
+                if (!currentLine) {
+                  continue;
+                }
+
+                // If it starts with "###", we've reached the next heading—stop and return null (no answer).
+                if (currentLine.startsWith("###")) {
+                  return null;
+                }
+
+                // Otherwise, this line should be our answer. Return it, stripped of whitespace.
+                return currentLine;
+              }
+
+              // If we run out of lines, we didn’t find any valid answer.
+              return null;
+            }
+
+            async function checkForExistingAppIdProject(appId, github, context) {
+              let page = 1;
+              const perPage = 100;
+              let foundProject = null;
+              while (true) {
+                const { data: projectsPage } = await github.rest.projects.listForRepo({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  state: "all",
+                  per_page: perPage,
+                  page,
+                });
+
+                if (projectsPage.length === 0) {
+                  // No more pages
+                  break;
+                }
+
+                foundProject = projectsPage.find((p) => p.name.trim() === appId);
+                if (foundProject) {
+                  console.log(`Project "${appId}" already exists (#${foundProject.id}).`);
+                  return true;
+                }
+                page++;
+              }
+
+              return false;
+            }
+
+            const gameName = extractHeadingValue(lines, /^### Game Name/);
+            const appIdRaw = extractHeadingValue(lines, /^### SteamDB App ID/);
+
+            let appIdNum = Number(appIdRaw);
+            if (!appIdRaw || Number.isNaN(appIdNum)) {
+              console.log("No App ID provided in issue body");
+            } else {
+              console.log(`SteamDB App ID detected: ${appIdNum}`);
+
+              // If a project does not exist, create one
+              const alreadyExists = await checkForExistingAppIdProject(
+                String(appIdNum),
+                github,
+                context
+              );
+              if (!alreadyExists) {
+                const { data: createdProject } = await github.rest.projects.createForRepo({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  name: String(appIdNum),
+                  body: `[${appIdNum}] ${gameName || "Unknown Game Name"}`,
+                });
+                console.log(
+                  `Created new project #${createdProject.id} named "${createdProject.name}".`
+                );
+              } else {
+                console.log(
+                  `Project for App ID ${appIdNum} already exists; no action needed.`
+                );
+              }
+            }
+
   parse-and-update-issue-labels:
     runs-on: ubuntu-latest
     permissions:
