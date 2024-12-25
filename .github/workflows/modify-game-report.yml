@@ -125,49 +125,74 @@ jobs:
               return null;
             }
 
-            // Extract label values
-            const deviceValue = extractHeadingValue(lines, /^### Device/);
+            async function applyLabel(issue, labelType, labelValue) {
+              let newLabel = `${labelType}:${labelValue}`;
 
-            let newDeviceLabel = null;
-            if (deviceValue) {
-              const lowerDevice = deviceValue.toLowerCase();
+              // Remove any old labels that don't match the new label
+              const existingLabelNames = issue.labels.map((label) => label.name);
+              const labelsToRemove = existingLabelNames.filter(
+                (name) => name.startsWith(`${labelType}:`) && name !== newLabel
+              );
 
-              // Example logic: if the line includes "steam deck", label as "device:steamdeck"
-              if (lowerDevice.includes("steam deck")) {
-                newDeviceLabel = "device:steamdeck";
-              } 
-              else if (lowerDevice.includes("ally")) {
-                newDeviceLabel = "device:rogally";
+              for (const labelName of labelsToRemove) {
+                console.log(`Removing old label: ${labelName}`);
+                await github.rest.issues.removeLabel({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  issue_number: issue.number,
+                  name: labelName,
+                });
+              }
+              // If we have a newLabel and it's not already on the issue, add it
+              if (newLabel && !existingLabelNames.includes(newLabel)) {
+                console.log(`Adding label: ${newLabel}`);
+                await github.rest.issues.addLabels({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  issue_number: issue.number,
+                  labels: [newLabel],
+                });
+              } else if (!newLabel) {
+                console.log(
+                  "No matching label found or specified in issue text. Not adding any label."
+                );
+              } else {
+                console.log(
+                  `Label "${newLabel}" already present on issue #${issue.number}.`
+                );
               }
             }
 
-            // Remove any old "device:*" labels that don't match the new label
-            const existingLabelNames = issue.labels.map((label) => label.name);
-            const deviceLabelsToRemove = existingLabelNames.filter((name) => name.startsWith("device:") && name !== newDeviceLabel);
-
-            for (const labelName of deviceLabelsToRemove) {
-              console.log(`Removing old device label: ${labelName}`);
-              await github.rest.issues.removeLabel({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                issue_number: issue.number,
-                name: labelName,
-              });
+            // Extract device label values
+            const deviceValue = extractHeadingValue(lines, /^### Device/);
+            let newDeviceLabel = null;
+            if (deviceValue) {
+              const lowerDevice = deviceValue.toLowerCase();
+              if (lowerDevice.includes("steam deck")) {
+                newDeviceLabel = "steamdeck";
+              } else if (lowerDevice.includes("ally")) {
+                newDeviceLabel = "rogally";
+              }
+              applyLabel(issue, "device", newDeviceLabel);
             }
 
-            // If we have a newDeviceLabel and it's not already on the issue, add it
-            if (newDeviceLabel && !existingLabelNames.includes(newDeviceLabel)) {
-              console.log(`Adding device label: ${newDeviceLabel}`);
-              await github.rest.issues.addLabels({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                issue_number: issue.number,
-                labels: [newDeviceLabel],
-              });
-            } else if (!newDeviceLabel) {
-              console.log("No matching device label found or specified in issue text. Not adding any device label.");
-            } else {
-              console.log(`Device label "${newDeviceLabel}" already present on issue #${issue.number}.`);
+            // Extract launcher label values
+            const launcherValue = extractHeadingValue(lines, /^### Launcher/);
+            let newLauncherLabel = null;
+            if (launcherValue) {
+              const lowerLauncher = launcherValue.toLowerCase();
+              if (lowerLauncher.includes("steam")) {
+                newLauncherLabel = "steam";
+              } else if (lowerLauncher.includes("heroic")) {
+                newLauncherLabel = "heroic";
+              } else if (lowerLauncher.includes("lutris")) {
+                newLauncherLabel = "lutris";
+              } else if (lowerLauncher.includes("bottles")) {
+                newLauncherLabel = "bottles";
+              } else {
+                newLauncherLabel = "other";
+              }
+              applyLabel(issue, "launcher", newLauncherLabel);
             }
 
   check-report-for-missing-data:
